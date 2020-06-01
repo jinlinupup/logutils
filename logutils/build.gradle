@@ -1,0 +1,101 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.3"
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles 'consumer-rules.pro'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.core:core-ktx:1.3.0'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+}
+
+//
+group 'com.suoer.logutils'
+version '1.0.0'
+
+//源代码打包任务
+task sourcesJar(type :Jar){
+    classifier 'sources' //分类器 区分其他jar包
+    from android.sourceSets.main.java.srcDirs
+}
+//创建文档生成任务
+task javadoc(type:Javadoc){
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+task docJar(type :Jar,dependsOn:javadoc){
+    classifier 'doc' //分类器 区分其他jar包
+    from javadoc.destinationDir
+}
+//配置 工程工件 jar产出的配置
+artifacts{
+    archives sourcesJar
+    archives docJar
+}
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
+    }
+}
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'com.github.dcendents.android-maven'
+bintray {
+    user = 'jinlinupup'  //用户名
+    key = "${bintraykey}"  //上一步获取的Api key
+    configurations = ['archives']
+    pkg {
+        repo = 'maven' //需要上传的仓库名
+        name = 'logutils'  //上传的项目名
+        userOrg = 'jinlinupup'
+        licenses = ['Apache-2.0']
+
+    }
+
+}
+
+
+install {
+    repositories.mavenInstaller {
+        //配置pom文件
+        pom.project {
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+        }
+    }
+}
